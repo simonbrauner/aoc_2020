@@ -31,6 +31,19 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
+        foreach (int firstExpense in expenses)
+        {
+            foreach (int secondExpense in expenses)
+            {
+                int remainder = sum - firstExpense - secondExpense;
+
+                if (expenses.Contains(remainder))
+                {
+                    return (firstExpense * secondExpense * remainder).ToString();
+                }
+            }
+        }
+
         return "";
     }
 }
