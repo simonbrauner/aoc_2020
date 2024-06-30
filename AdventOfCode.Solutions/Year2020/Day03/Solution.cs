@@ -32,13 +32,32 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
+        return CountTrees(3, 1).ToString();
+    }
+
+    protected override string SolvePartTwo()
+    {
+        (int, int)[] movements = { (1, 1), (3, 1), (5, 1), (7, 1), (1, 2) };
+
+        long product = 1;
+
+        foreach ((int right, int down) in movements)
+        {
+            product *= CountTrees(right, down);
+        }
+
+        return product.ToString();
+    }
+
+    int CountTrees(int right, int down)
+    {
         int x = 0;
         int y = 0;
         int result = 0;
 
-        while (++y < treeMap.RowCount())
+        while ((y += down) < treeMap.RowCount())
         {
-            x += 3;
+            x += right;
 
             if (treeMap.TreeOnCoordinates(x, y))
             {
@@ -46,11 +65,6 @@ class Solution : SolutionBase
             }
         }
 
-        return result.ToString();
-    }
-
-    protected override string SolvePartTwo()
-    {
-        return "";
+        return result;
     }
 }
