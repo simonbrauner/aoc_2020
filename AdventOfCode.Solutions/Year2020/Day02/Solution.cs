@@ -2,7 +2,7 @@ namespace AdventOfCode.Solutions.Year2020.Day02;
 
 using System.Text.RegularExpressions;
 
-record Password(int MinLength, int MaxLenght, char Letter, string Value);
+record Password(int FirstNumber, int SecondNumber, char Letter, string Value);
 
 class Solution : SolutionBase
 {
@@ -37,8 +37,10 @@ class Solution : SolutionBase
         foreach (Password password in passwords)
         {
             int letterCount = password.Value.CountLetters(password.Letter);
+            int minLength = password.FirstNumber;
+            int maxLength = password.SecondNumber;
 
-            if (letterCount >= password.MinLength && letterCount <= password.MaxLenght)
+            if (letterCount >= minLength && letterCount <= maxLength)
             {
                 result++;
             }
@@ -49,6 +51,29 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        int result = 0;
+
+        foreach (Password password in passwords)
+        {
+            int matchCount = 0;
+            int firstIndex = password.FirstNumber - 1;
+            int secondIndex = password.SecondNumber - 1;
+
+            if (password.Value[firstIndex] == password.Letter)
+            {
+                matchCount++;
+            }
+            if (password.Value[secondIndex] == password.Letter)
+            {
+                matchCount++;
+            }
+
+            if (matchCount == 1)
+            {
+                result++;
+            }
+        }
+
+        return result.ToString();
     }
 }
