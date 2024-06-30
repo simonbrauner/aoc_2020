@@ -58,4 +58,19 @@ public static class StringUtils
                 .ToArray();
         }
     }
+
+    public static int CountLetters(this string str, char letterToCount)
+    {
+        int result = 0;
+
+        foreach (char letter in str)
+        {
+            if (letter == letterToCount)
+            {
+                result++;
+            }
+        }
+
+        return result;
+    }
 }
