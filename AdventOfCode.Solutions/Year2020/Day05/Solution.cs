@@ -59,6 +59,18 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
+        HashSet<int> ids = new HashSet<int>(seats.Select(s => s.Id()));
+
+        foreach (int id in ids)
+        {
+            int myId = id + 1;
+
+            if (ids.Contains(id + 2) && !ids.Contains(myId))
+            {
+                return myId.ToString();
+            }
+        }
+
         return "";
     }
 }
