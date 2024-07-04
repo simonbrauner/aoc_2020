@@ -2,34 +2,53 @@ namespace AdventOfCode.Solutions.Year2020.Day06;
 
 class Solution : SolutionBase
 {
-    List<HashSet<char>> yesAnswersByGroups = new List<HashSet<char>>();
+    List<List<string>> answersByGroups = new List<List<string>>();
 
     public Solution()
         : base(06, 2020, "")
     {
-        foreach (string yesAnswersGroup in Input.SplitByParagraph())
+        foreach (string answerGroup in Input.SplitByParagraph())
         {
-            HashSet<char> yesAnswers = new HashSet<char>();
-
-            foreach (char letter in yesAnswersGroup)
-            {
-                if (Char.IsAsciiLetterLower(letter))
-                {
-                    yesAnswers.Add(letter);
-                }
-            }
-
-            yesAnswersByGroups.Add(yesAnswers);
+            List<string> groupAnswers = new List<String>(answerGroup.SplitByNewline());
+            answersByGroups.Add(groupAnswers);
         }
     }
 
     protected override string SolvePartOne()
     {
-        return yesAnswersByGroups.Select(a => a.Count()).Sum().ToString();
+        int answerSum = 0;
+
+        foreach (List<string> groupAnswers in answersByGroups)
+        {
+            HashSet<char> anyAnsweredYes = new HashSet<char>();
+
+            foreach (string yesAnswers in groupAnswers)
+            {
+                anyAnsweredYes.UnionWith(yesAnswers);
+            }
+
+            answerSum += anyAnsweredYes.Count();
+        }
+
+        return answerSum.ToString();
     }
 
     protected override string SolvePartTwo()
     {
-        return "";
+        int answerSum = 0;
+
+        foreach (List<string> groupAnswers in answersByGroups)
+        {
+            HashSet<char> allAnsweredYes = new HashSet<char>(groupAnswers[0]);
+
+            foreach (string yesAnswers in groupAnswers.Skip(1))
+            {
+                allAnsweredYes.IntersectWith(yesAnswers);
+            }
+
+            answerSum += allAnsweredYes.Count();
+        }
+
+        return answerSum.ToString();
     }
 }
