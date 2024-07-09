@@ -2,7 +2,7 @@ namespace AdventOfCode.Solutions.Year2020.Day07;
 
 using System.Text.RegularExpressions;
 
-record BagContent(int count, string description);
+record BagContent(int Count, string Description);
 
 class Solution : SolutionBase
 {
@@ -28,38 +28,44 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
-        HashSet<string> canContainShinyGold = new HashSet<string>();
-
-        foreach (string bag in bagContents.Keys)
-        {
-            TryIncludeShinyGold(bag, ref canContainShinyGold);
-        }
-
-        return canContainShinyGold.Count().ToString();
+        return bagContents.Keys.Count(b => CanIncludeShinyGold(b)).ToString();
     }
 
     protected override string SolvePartTwo()
     {
-        return "";
+        return CountBags(ShinyGoldName).ToString();
     }
 
-    void TryIncludeShinyGold(string bag, ref HashSet<string> canContainShinyGold)
+    bool CanIncludeShinyGold(string bag)
     {
-        Queue<string> queue = new Queue<string>(bagContents[bag].Select(c => c.description));
+        Queue<string> queue = new Queue<string>(bagContents[bag].Select(c => c.Description));
 
         string? current;
         while (queue.TryDequeue(out current))
         {
-            if (current == ShinyGoldName || canContainShinyGold.Contains(current))
+            if (current == ShinyGoldName)
             {
-                canContainShinyGold.Add(bag);
-                return;
+                return true;
             }
 
             foreach (BagContent bagContent in bagContents[current])
             {
-                queue.Enqueue(bagContent.description);
+                queue.Enqueue(bagContent.Description);
             }
         }
+
+        return false;
+    }
+
+    int CountBags(string bag)
+    {
+        int count = 0;
+
+        foreach (BagContent bagContent in bagContents[bag])
+        {
+            count += bagContent.Count * (CountBags(bagContent.Description) + 1);
+        }
+
+        return count;
     }
 }
