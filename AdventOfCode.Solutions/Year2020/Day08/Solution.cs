@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 
 record Instruction(string Operation, int Argument);
 
+record ProgramResult(int AccumulatorValue, bool Stopped);
+
 class Solution : SolutionBase
 {
     List<Instruction> instructions = new List<Instruction>();
@@ -23,12 +25,53 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
+        return RunProgram().AccumulatorValue.ToString();
+    }
+
+    protected override string SolvePartTwo()
+    {
+        for (int i = 0; i < instructions.Count(); i++)
+        {
+            Instruction originalInstruction = instructions[i];
+
+            if (originalInstruction.Operation == "jmp")
+            {
+                instructions[i] = new("nop", originalInstruction.Argument);
+            }
+            else if (originalInstruction.Operation == "nop")
+            {
+                instructions[i] = new("jmp", originalInstruction.Argument);
+            }
+
+            ProgramResult programResult = RunProgram();
+            if (programResult.Stopped)
+            {
+                return programResult.AccumulatorValue.ToString();
+            }
+
+            instructions[i] = originalInstruction;
+        }
+
+        return "";
+    }
+
+    ProgramResult RunProgram()
+    {
         int instructionIndex = 0;
         HashSet<int> usedInstructionIndices = new HashSet<int>();
         int accumulator = 0;
 
-        while (!usedInstructionIndices.Contains(instructionIndex))
+        while (true)
         {
+            if (usedInstructionIndices.Contains(instructionIndex))
+            {
+                return new(accumulator, false);
+            }
+            if (instructionIndex == instructions.Count())
+            {
+                return new(accumulator, true);
+            }
+
             Instruction instruction = instructions[instructionIndex];
             usedInstructionIndices.Add(instructionIndex);
 
@@ -46,12 +89,5 @@ class Solution : SolutionBase
                     break;
             }
         }
-
-        return accumulator.ToString();
-    }
-
-    protected override string SolvePartTwo()
-    {
-        return "";
     }
 }
