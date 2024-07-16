@@ -4,6 +4,7 @@ class Solution : SolutionBase
 {
     const int EarlierNumberCount = 25;
     List<long> numbers = new List<long>();
+    long NotSumOfTwoEarlier;
 
     public Solution()
         : base(09, 2020, "")
@@ -19,32 +20,45 @@ class Solution : SolutionBase
     {
         for (int i = EarlierNumberCount; i < numbers.Count(); i++)
         {
-            if (!IsSumOfTwoEarlier(i))
+            bool isSum = false;
+
+            for (int j = i - EarlierNumberCount; j < i; j++)
             {
+                for (int k = j + 1; k < i; k++)
+                {
+                    if (numbers[j] != numbers[k] && numbers[j] + numbers[k] == numbers[i])
+                    {
+                        isSum = true;
+                    }
+                }
+            }
+
+            if (!isSum)
+            {
+                NotSumOfTwoEarlier = numbers[i];
                 return numbers[i].ToString();
             }
         }
+
         return "";
     }
 
     protected override string SolvePartTwo()
     {
-        return "";
-    }
+        List<long> cumulativeSums = numbers.CumulativeSums();
 
-    bool IsSumOfTwoEarlier(int i)
-    {
-        for (int j = i - EarlierNumberCount; j < i; j++)
+        for (int i = 0; i < cumulativeSums.Count(); i++)
         {
-            for (int k = i - EarlierNumberCount; k < i; k++)
+            for (int j = i + 3; j < cumulativeSums.Count(); j++)
             {
-                if (numbers[j] != numbers[k] && numbers[j] + numbers[k] == numbers[i])
+                if (cumulativeSums[j] - cumulativeSums[i] == NotSumOfTwoEarlier)
                 {
-                    return true;
+                    List<long> range = numbers.GetRange(i + 1, j - i);
+                    return (range.Min() + range.Max()).ToString();
                 }
             }
         }
 
-        return false;
+        return "";
     }
 }

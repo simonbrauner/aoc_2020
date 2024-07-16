@@ -15,4 +15,18 @@ public static class CollectionUtils
                 v => Permutations(values.Where(x => x?.Equals(v) == false)),
                 (v, p) => p.Prepend(v)
             );
+
+    public static List<long> CumulativeSums(this List<long> oriignalNumbers)
+    {
+        List<long> cumulativeSums = new List<long>();
+
+        long sum = 0;
+        foreach (long number in oriignalNumbers)
+        {
+            sum += number;
+            cumulativeSums.Add(sum);
+        }
+
+        return cumulativeSums;
+    }
 }
