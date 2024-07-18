@@ -37,6 +37,21 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        long[] ways = new long[joltages.Last() + 1];
+
+        foreach (int joltage in joltages)
+        {
+            ways[joltage]++;
+        }
+
+        for (int i = ways.Count() - 1 - 3; i >= 0; i--)
+        {
+            if (ways[i] != 0)
+            {
+                ways[i] = ways[i + 1] + ways[i + 2] + ways[i + 3];
+            }
+        }
+
+        return ways[0].ToString();
     }
 }
