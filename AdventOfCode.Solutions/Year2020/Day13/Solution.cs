@@ -13,9 +13,16 @@ class Solution : SolutionBase
         string[] lines = Input.SplitByNewline();
 
         earliestTimestamp = int.Parse(lines[0]);
-        foreach (Match match in Regex.Matches(lines[1], @"\d+"))
+        foreach (Match match in Regex.Matches(lines[1], @"\d+|x"))
         {
-            departures.Add(int.Parse(match.Value));
+            if (match.Value == "x")
+            {
+                departures.Add(0);
+            }
+            else
+            {
+                departures.Add(int.Parse(match.Value));
+            }
         }
     }
 
@@ -26,7 +33,7 @@ class Solution : SolutionBase
 
         foreach (int departure in departures)
         {
-            if (WaitingTime(departure) < minWaiting)
+            if (departure != 0 && WaitingTime(departure) < minWaiting)
             {
                 minBus = departure;
                 minWaiting = WaitingTime(departure);
@@ -38,7 +45,21 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        // Chinese remainder theorem
+
+        for (int i = 0; i < departures.Count(); i++)
+        {
+            int departure = departures[i];
+
+            if (departure != 0)
+            {
+                // Console.WriteLine($"x ≡ {i} (mod {departure})");
+            }
+        }
+
+        // x ≡ a (mod b) => result = b - a
+
+        return "not computed directly";
     }
 
     int WaitingTime(int departure)
