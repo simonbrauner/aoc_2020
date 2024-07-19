@@ -1,6 +1,29 @@
 namespace AdventOfCode.Solutions.Year2020.Day12;
 
-class Ship
+abstract class Ship
+{
+    protected int east = 0;
+    protected int north = 0;
+
+    protected abstract void Move(string instruction);
+
+    protected int ManhattanDistanceFromStart()
+    {
+        return Math.Abs(east) + Math.Abs(north);
+    }
+
+    public string Solve(string[] instructions)
+    {
+        foreach (string instruction in instructions)
+        {
+            Move(instruction);
+        }
+
+        return ManhattanDistanceFromStart().ToString();
+    }
+}
+
+class ShipPartOne : Ship
 {
     readonly Dictionary<int, char> orientationDirection = new Dictionary<int, char>
     {
@@ -10,12 +33,8 @@ class Ship
         { 270, 'W' }
     };
     int orientation = 90;
-    int east = 0;
-    int north = 0;
 
-    public Ship() { }
-
-    public void Move(string instruction)
+    protected override void Move(string instruction)
     {
         int value = int.Parse(instruction.Substring(1));
         char action = instruction[0];
@@ -39,26 +58,56 @@ class Ship
                 east -= value;
                 break;
             case 'L':
-                orientation = orientation - value;
+                orientation = (orientation - value + 360) % 360;
                 break;
             case 'R':
-                orientation = orientation + value;
+                orientation = (orientation + value + 360) % 360;
                 break;
         }
-
-        if (orientation < 0)
-        {
-            orientation += 360;
-        }
-        if (orientation >= 360)
-        {
-            orientation -= 360;
-        }
     }
+}
 
-    public int ManhattanDistanceFromStart()
+class ShipPartTwo : Ship
+{
+    int waypointEast = 10;
+    int waypointNorth = 1;
+
+    protected override void Move(string instruction)
     {
-        return Math.Abs(east) + Math.Abs(north);
+        int value = int.Parse(instruction.Substring(1));
+        char action = instruction[0];
+
+        switch (action)
+        {
+            case 'N':
+                waypointNorth += value;
+                break;
+            case 'S':
+                waypointNorth -= value;
+                break;
+            case 'E':
+                waypointEast += value;
+                break;
+            case 'W':
+                waypointEast -= value;
+                break;
+            case 'L':
+                for (int i = 0; i < value; i += 90)
+                {
+                    (waypointEast, waypointNorth) = (-waypointNorth, waypointEast);
+                }
+                break;
+            case 'R':
+                for (int i = 0; i < value; i += 90)
+                {
+                    (waypointEast, waypointNorth) = (waypointNorth, -waypointEast);
+                }
+                break;
+            case 'F':
+                east += value * waypointEast;
+                north += value * waypointNorth;
+                break;
+        }
     }
 }
 
@@ -69,18 +118,11 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
-        Ship ship = new Ship();
-
-        foreach (string instruction in Input.SplitByNewline())
-        {
-            ship.Move(instruction);
-        }
-
-        return ship.ManhattanDistanceFromStart().ToString();
+        return (new ShipPartOne()).Solve(Input.SplitByNewline());
     }
 
     protected override string SolvePartTwo()
     {
-        return "";
+        return (new ShipPartTwo()).Solve(Input.SplitByNewline());
     }
 }
