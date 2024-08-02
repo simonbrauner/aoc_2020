@@ -3,7 +3,6 @@ namespace AdventOfCode.Solutions.Year2020.Day15;
 class Solution : SolutionBase
 {
     List<int> startingNumbers;
-    Dictionary<int, int> mostRecentlySpoken = new Dictionary<int, int>();
 
     public Solution()
         : base(15, 2020, "")
@@ -13,7 +12,18 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
+        return NthNumberSpoken(2020).ToString();
+    }
+
+    protected override string SolvePartTwo()
+    {
+        return NthNumberSpoken(30000000).ToString();
+    }
+
+    int NthNumberSpoken(int n)
+    {
         int turn = 0;
+        Dictionary<int, int> mostRecentlySpoken = new Dictionary<int, int>();
 
         foreach (int startingNumber in startingNumbers)
         {
@@ -22,7 +32,7 @@ class Solution : SolutionBase
         }
 
         int current = startingNumbers.Last();
-        while (turn < 2020)
+        while (turn < n)
         {
             int mostRecentlySpokenCurrent = mostRecentlySpoken.GetValueOrDefault(current);
             mostRecentlySpoken[current] = turn;
@@ -39,11 +49,6 @@ class Solution : SolutionBase
             turn++;
         }
 
-        return current.ToString();
-    }
-
-    protected override string SolvePartTwo()
-    {
-        return "";
+        return current;
     }
 }
