@@ -8,10 +8,125 @@ record UpdateBitmask(string Mask) : Instruction;
 
 record WriteValue(long Address, long Value) : Instruction;
 
+abstract class DecoderChip
+{
+    protected string mask = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
+    public abstract Dictionary<long, long> Memory(List<Instruction> instructions);
+}
+
+class DecoderChipVersionOne : DecoderChip
+{
+    public override Dictionary<long, long> Memory(List<Instruction> instructions)
+    {
+        Dictionary<long, long> memory = new Dictionary<long, long>();
+
+        foreach (Instruction instruction in instructions)
+        {
+            switch (instruction)
+            {
+                case UpdateBitmask updateBitmask:
+                    mask = updateBitmask.Mask;
+                    break;
+                case WriteValue writeValue:
+                    memory[writeValue.Address] = ComputeValueWithMask(writeValue.Value);
+                    break;
+            }
+        }
+
+        return memory;
+    }
+
+    long ComputeValueWithMask(long value)
+    {
+        long valueWithMask = 0;
+
+        long power = 1L << 35;
+        foreach (char maskBit in mask)
+        {
+            if (maskBit == '1' || (maskBit == 'X' && (value & power) != 0))
+            {
+                valueWithMask += power;
+            }
+
+            power >>= 1;
+        }
+
+        return valueWithMask;
+    }
+}
+
+class DecoderChipVersionTwo : DecoderChip
+{
+    public override Dictionary<long, long> Memory(List<Instruction> instructions)
+    {
+        Dictionary<long, long> memory = new Dictionary<long, long>();
+
+        foreach (Instruction instruction in instructions)
+        {
+            switch (instruction)
+            {
+                case UpdateBitmask updateBitmask:
+                    mask = updateBitmask.Mask;
+                    break;
+                case WriteValue writeValue:
+                    foreach (long address in ComputeAddressesWithMask(writeValue.Address))
+                    {
+                        memory[address] = writeValue.Value;
+                    }
+                    break;
+            }
+        }
+
+        return memory;
+    }
+
+    List<long> ComputeAddressesWithMask(long address)
+    {
+        long addressWithoutFloatingBits = 0;
+        Stack<long> floatingBits = new Stack<long>();
+
+        long power = 1L << 35;
+        foreach (char maskBit in mask)
+        {
+            if (maskBit == '1' || (maskBit == '0' && (address & power) != 0))
+            {
+                addressWithoutFloatingBits += power;
+            }
+
+            if (maskBit == 'X')
+            {
+                floatingBits.Push(power);
+            }
+
+            power >>= 1;
+        }
+
+        List<long> addresses = new List<long>();
+        ExpandFloatingBits(addressWithoutFloatingBits, floatingBits, addresses);
+
+        return addresses;
+    }
+
+    void ExpandFloatingBits(long address, Stack<long> floatingBits, List<long> addresses)
+    {
+        if (floatingBits.Count() == 0)
+        {
+            addresses.Add(address);
+            return;
+        }
+
+        long currentBit = floatingBits.Pop();
+
+        ExpandFloatingBits(address, floatingBits, addresses);
+        ExpandFloatingBits(address + currentBit, floatingBits, addresses);
+
+        floatingBits.Push(currentBit);
+    }
+}
+
 class Solution : SolutionBase
 {
-    string mask = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    Dictionary<long, long> memory = new Dictionary<long, long>();
     List<Instruction> instructions = new List<Instruction>();
 
     public Solution()
@@ -35,47 +150,11 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
-        foreach (Instruction instruction in instructions)
-        {
-            switch (instruction)
-            {
-                case UpdateBitmask updateBitmask:
-                    mask = updateBitmask.Mask;
-                    break;
-                case WriteValue writeValue:
-                    memory[writeValue.Address] = ComputeValueWithMask(writeValue.Value, mask);
-                    break;
-            }
-        }
-
-        return SumOfValuesInMemory().ToString();
+        return (new DecoderChipVersionOne().Memory(instructions)).Values.Sum().ToString();
     }
 
     protected override string SolvePartTwo()
     {
-        return "";
-    }
-
-    long ComputeValueWithMask(long value, string mask)
-    {
-        long valueWithMask = 0;
-
-        long power = 1L << 35;
-        foreach (char maskBit in mask)
-        {
-            if (maskBit == '1' || (maskBit == 'X' && (value & power) != 0))
-            {
-                valueWithMask += power;
-            }
-
-            power >>= 1;
-        }
-
-        return valueWithMask;
-    }
-
-    long SumOfValuesInMemory()
-    {
-        return memory.Values.Sum();
+        return (new DecoderChipVersionTwo().Memory(instructions)).Values.Sum().ToString();
     }
 }
