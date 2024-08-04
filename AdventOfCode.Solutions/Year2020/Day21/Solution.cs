@@ -6,6 +6,7 @@ class Solution : SolutionBase
 {
     List<HashSet<string>> ingredients = new List<HashSet<string>>();
     Dictionary<string, List<int>> allergens = new Dictionary<string, List<int>>();
+    Dictionary<string, string> allergenIngredients = new Dictionary<string, string>();
 
     public Solution()
         : base(21, 2020, "")
@@ -36,12 +37,24 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
-        HashSet<string> foundAllergens = new HashSet<string>();
-        HashSet<string> ingredientsWithAllergens = new HashSet<string>();
+        DetermineAllergenIngredients();
 
-        while (foundAllergens.Count() != allergens.Count())
+        return CountIngredientsWithoutAllergens().ToString();
+    }
+
+    protected override string SolvePartTwo()
+    {
+        List<string> allergenNames = new List<string>(allergenIngredients.Keys);
+        allergenNames.Sort();
+
+        return String.Join(',', allergenNames.Select(n => allergenIngredients[n]));
+    }
+
+    void DetermineAllergenIngredients()
+    {
+        while (allergenIngredients.Count() != allergens.Count())
         {
-            foreach (string allergenName in allergens.Keys.Except(foundAllergens))
+            foreach (string allergenName in allergens.Keys.Except(allergenIngredients.Keys))
             {
                 List<int> indices = allergens[allergenName];
 
@@ -53,10 +66,9 @@ class Solution : SolutionBase
 
                 if (possibleIngredients.Count() == 1)
                 {
-                    foundAllergens.Add(allergenName);
-
                     string ingredientName = possibleIngredients.Single();
-                    ingredientsWithAllergens.Add(ingredientName);
+                    allergenIngredients.Add(allergenName, ingredientName);
+
                     foreach (int removeIndex in indices)
                     {
                         ingredients[removeIndex].Remove(ingredientName);
@@ -64,12 +76,12 @@ class Solution : SolutionBase
                 }
             }
         }
-
-        return ingredients.Select(i => i.Except(ingredientsWithAllergens).Count()).Sum().ToString();
     }
 
-    protected override string SolvePartTwo()
+    int CountIngredientsWithoutAllergens()
     {
-        return "";
+        HashSet<string> ingredientsWithAllergens = allergenIngredients.Values.ToHashSet();
+
+        return ingredients.Select(i => i.Except(ingredientsWithAllergens).Count()).Sum();
     }
 }
