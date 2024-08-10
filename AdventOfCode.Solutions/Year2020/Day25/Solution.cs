@@ -26,7 +26,7 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        return "not computed directly";
     }
 
     long TransformIteration(long value, long subjectNumber = 7)
