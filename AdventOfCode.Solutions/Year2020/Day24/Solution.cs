@@ -4,49 +4,56 @@ using System.Text.RegularExpressions;
 
 record TilePosition(int North, int East)
 {
+    static readonly Dictionary<string, TilePosition> NeighborDifferences = new Dictionary<
+        string,
+        TilePosition
+    >
+    {
+        { "e", new(0, 2) },
+        { "se", new(-1, 1) },
+        { "sw", new(-1, -1) },
+        { "w", new(0, -2) },
+        { "nw", new(1, -1) },
+        { "ne", new(1, 1) }
+    };
+
     public static TilePosition Create(string stringRepresentation)
     {
-        int north = 0;
-        int east = 0;
+        TilePosition tilePosition = new(0, 0);
 
         foreach (Match match in Regex.Matches(stringRepresentation, @"(e|se|sw|w|nw|ne)"))
         {
-            switch (match.Value)
+            tilePosition += NeighborDifferences[match.Value];
+        }
+
+        return tilePosition;
+    }
+
+    public int BlackNeighborCount(HashSet<TilePosition> blackTiles)
+    {
+        int count = 0;
+
+        foreach (TilePosition neighborDifference in NeighborDifferences.Values)
+        {
+            if (blackTiles.Contains(this + neighborDifference))
             {
-                case "e":
-                    east += 2;
-                    break;
-                case "se":
-                    north--;
-                    east++;
-                    break;
-                case "sw":
-                    north--;
-                    east--;
-                    break;
-                case "w":
-                    east -= 2;
-                    break;
-                case "nw":
-                    north++;
-                    east--;
-                    break;
-                case "ne":
-                    north++;
-                    east++;
-                    break;
-                default:
-                    throw new ArgumentException();
+                count++;
             }
         }
 
-        return new(north, east);
+        return count;
+    }
+
+    public static TilePosition operator +(TilePosition a, TilePosition b)
+    {
+        return new(a.North + b.North, a.East + b.East);
     }
 }
 
 class Solution : SolutionBase
 {
     List<TilePosition> tilePositions;
+    HashSet<TilePosition> blackTiles = new HashSet<TilePosition>();
 
     public Solution()
         : base(24, 2020, "")
@@ -56,8 +63,6 @@ class Solution : SolutionBase
 
     protected override string SolvePartOne()
     {
-        HashSet<TilePosition> blackTiles = new HashSet<TilePosition>();
-
         foreach (TilePosition tilePosition in tilePositions)
         {
             if (!blackTiles.Remove(tilePosition))
@@ -71,6 +76,42 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        int maxNorth = blackTiles.Select(t => t.North).Max();
+        int minNorth = blackTiles.Select(t => t.North).Min();
+        int maxEast = blackTiles.Select(t => t.East).Max();
+        int minEast = blackTiles.Select(t => t.East).Min();
+
+        for (int dayNumber = 1; dayNumber <= 100; dayNumber++)
+        {
+            HashSet<TilePosition> newBlackTiles = new HashSet<TilePosition>(blackTiles);
+
+            for (int north = minNorth - 2 * dayNumber; north <= maxNorth + 2 * dayNumber; north++)
+            {
+                for (int east = minEast - 2 * dayNumber; east <= maxEast + 2 * dayNumber; east++)
+                {
+                    TilePosition tilePosition = new(north, east);
+
+                    int blackNeighborCount = tilePosition.BlackNeighborCount(blackTiles);
+
+                    if (
+                        blackNeighborCount != 1
+                        && blackNeighborCount != 2
+                        && blackTiles.Contains(tilePosition)
+                    )
+                    {
+                        newBlackTiles.Remove(tilePosition);
+                    }
+
+                    if (blackNeighborCount == 2 && !blackTiles.Contains(tilePosition))
+                    {
+                        newBlackTiles.Add(tilePosition);
+                    }
+                }
+            }
+
+            blackTiles = newBlackTiles;
+        }
+
+        return blackTiles.Count().ToString();
     }
 }
